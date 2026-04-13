@@ -33,3 +33,10 @@ jobs:
         with:
           name: test-results
           path: TestResults/*.trx
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        with:
+          name: xUnit Tests
+          path: TestResults/*.trx
+          reporter: dotnet-trx
