@@ -1,0 +1,37 @@
+name: Deploy Blazor WASM to GitHub Pages
+
+on:
+  workflow_dispatch:   # manual run button
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish Blazor
+        run: dotnet publish -c Release -o publish
+
+      - name: Fix base path
+        run: |
+          sed -i 's|<base href="/" />|<base href="/CICDWASM/" />|g' publish/wwwroot/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: publish/wwwroot
+
+      - name: Deploy
+        uses: actions/deploy-pages@v2

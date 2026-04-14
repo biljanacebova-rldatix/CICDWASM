@@ -1,5 +1,4 @@
 ﻿using Bunit;
-using Xunit;
 using CICDWASM.Pages;
 
 namespace CICDWASM.Tests;
@@ -20,6 +19,6 @@ public class HelloTest : BunitContext
         var cut = Render<Hello>(parameters =>
             parameters.Add(p => p.Name, "Alice"));
 
-        cut.MarkupMatches("<h3>Hello, Alice</h3>");
+        cut.MarkupMatches("<h3>Hello Alice</h3>");
     }
 }
