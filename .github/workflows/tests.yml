@@ -75,12 +75,12 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Publish app
+      run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o release
+
+    - name: Fix base href
       run: |
-        dotnet publish CICDWASM/CICDWASM.csproj \
-        -c Release \
-        -o release \
-        /p:BaseHref=/${{ github.event.repository.name }}/
-      
+        sed -i 's|<base href="/"[^>]*>|<base href="/${{ github.event.repository.name }}/">|g' release/wwwroot/index.html
+
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
