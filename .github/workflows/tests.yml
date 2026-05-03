@@ -32,3 +32,14 @@ jobs:
         with:
           name: test-results
           path: TestResults\test-results.trx
+
+      - name: Run tests 1
+        run: dotnet test --logger "trx;LogFileName=test-results.trx"
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: .NET Tests
+          path: ./test-results.trx
+          reporter: dotnet-trx
