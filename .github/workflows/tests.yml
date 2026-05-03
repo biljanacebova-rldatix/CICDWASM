@@ -53,6 +53,18 @@ jobs:
       - name: List files 2
         run: ls -R
 
+      - name: Run tests 3
+        run: dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj --no-build -c Release --logger "trx" --results-directory ./CICDWASM/TestResults
+
+      - name: Upload test results 3
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./CICDWASM/TestResults/**/*.trx
+
+      - name: Find TRX files 3
+        run: find . -name "*.trx"
+
       - name: Publish test results
         uses: dorny/test-reporter@v1
         if: always()
