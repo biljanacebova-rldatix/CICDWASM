@@ -25,16 +25,22 @@ jobs:
         run: dotnet build --no-restore -c Release
 
       - name: Run tests
-        run: dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj --no-build -c Release --logger "trx;LogFileName=TestResults\test-results.trx" --results-directory .\TestResults
+        run: dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj --no-build -c Release --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: TestResults\test-results.trx
+          path: TestResults/test-results.trx
+
+      - name: List files
+        run: ls -R
 
       - name: Run tests 1
         run: dotnet test --logger "trx;LogFileName=test-results.trx"
+        
+      - name: List files 1
+        run: ls -R
 
       - name: Publish test results
         uses: dorny/test-reporter@v1
