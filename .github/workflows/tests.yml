@@ -26,10 +26,10 @@ jobs:
 
       - name: Run tests
         run: |
-            dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj
-            --no-build
-            -c Release
-            --logger "trx"
+            dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj \
+            --no-build \
+            -c Release \
+            --logger "trx" \
             --results-directory ./CICDWASM/TestResults
 
       - name: Upload test results
