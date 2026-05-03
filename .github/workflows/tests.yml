@@ -24,6 +24,12 @@ jobs:
       - name: Build solution
         run: dotnet build --no-restore -c Release
 
+      - name: Build tests
+        run: dotnet build CICDWASM.Tests/CICDWASM.Tests.csproj -c Release
+
+      - name: Run tests 0
+        run: dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj --no-build -c Release --logger "trx" --results-directory ./CICDWASM/TestResults
+
       - name: Run tests
         run: |
             dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj \
