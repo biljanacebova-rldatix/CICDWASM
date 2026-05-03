@@ -21,12 +21,8 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Publish Blazor
-        run: dotnet publish -c Release -o publish
-
-      - name: Fix base path
-        run: |
-          sed -i 's|<base href="/" />|<base href="/CICDWASM/" />|g' publish/wwwroot/index.html
+      - name: Publish app
+        run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o release /p:BaseHref=/${{ github.event.repository.name }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
