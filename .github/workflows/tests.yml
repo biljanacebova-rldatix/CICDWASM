@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -59,7 +59,7 @@ jobs:
           reporter: dotnet-trx
   
   deploy:
-    needs: test
+    needs: build-and-test
     runs-on: ubuntu-latest
 
     environment:
