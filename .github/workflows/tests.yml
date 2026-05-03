@@ -27,9 +27,6 @@ jobs:
       - name: Build tests
         run: dotnet build CICDWASM.Tests/CICDWASM.Tests.csproj -c Release
 
-      - name: Run tests 0
-        run: dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj --no-build -c Release --logger "trx" --results-directory ./CICDWASM/TestResults
-
       - name: Run tests
         run: |
             dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj \
@@ -47,34 +44,10 @@ jobs:
       - name: Find TRX files
         run: find . -name "*.trx"
 
-      - name: Run tests 2
-        run: dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj --no-build -c Release --logger "trx;LogFileName=test-results.trx" --results-directory ./CICDWASM/TestResults
-
-      - name: Upload test results 2
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: ./CICDWASM/TestResults/test-results.trx
-
-      - name: List files 2
-        run: ls -R
-
-      - name: Run tests 3
-        run: dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj --no-build -c Release --logger "trx" --results-directory ./CICDWASM/TestResults
-
-      - name: Upload test results 3
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: ./CICDWASM/TestResults/**/*.trx
-
-      - name: Find TRX files 3
-        run: find . -name "*.trx"
-
       - name: Publish test results
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: .NET Tests
-          path: ./CICDWASM/TestResults/test-results.trx
+          name: Tests
+          path: ./CICDWASM/TestResults/**/*.trx
           reporter: dotnet-trx
