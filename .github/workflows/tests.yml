@@ -1,0 +1,91 @@
+name: Build, Test and Deploy
+
+on:
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch:   # manual run button
+
+permissions:
+  contents: read
+  checks: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore -c Release
+
+      - name: Build tests
+        run: dotnet build CICDWASM.Tests/CICDWASM.Tests.csproj -c Release
+
+      - name: Run tests
+        run: |
+            dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj \
+            --no-build \
+            -c Release \
+            --logger "trx" \
+            --results-directory ./CICDWASM/TestResults
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./CICDWASM/TestResults/**/*.trx
+
+      - name: Find TRX files
+        run: find . -name "*.trx"
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Tests
+          path: ./CICDWASM/TestResults/**/*.trx
+          reporter: dotnet-trx
+  
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Publish app
+      run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o release
+
+    - name: Fix base href
+      run: |
+        sed -i 's|<base href="/"[^>]*>|<base href="/${{ github.event.repository.name }}/">|g' release/wwwroot/index.html
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: release/wwwroot
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
