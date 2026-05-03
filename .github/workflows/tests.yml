@@ -75,12 +75,16 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Publish app
-      run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o publish /p:BaseHref=/${{ github.event.repository.name }}/
+      run: |
+        dotnet publish CICDWASM/CICDWASM.csproj \
+        -c Release \
+        -o release \
+        /p:BaseHref=/${{ github.event.repository.name }}/
       
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: publish/wwwroot
+        path: release/wwwroot
 
     - name: Deploy to GitHub Pages
       id: deployment
