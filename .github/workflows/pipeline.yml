@@ -52,7 +52,7 @@ jobs:
 
       - name: Publish test results
         uses: dorny/test-reporter@v1
-        if: always()
+        if: success() || failure()
         with:
           name: Tests
           path: ./CICDWASM/TestResults/**/*.trx
@@ -89,3 +89,33 @@ jobs:
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+
+    - name: Add summary - monitoring
+      if: always()
+      run: |
+        echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Tests executed" >> $GITHUB_STEP_SUMMARY
+        echo "- Deployment attempted" >> $GITHUB_STEP_SUMMARY
+
+    - name: Show publish output - explicit logging
+      run: ls -R release/wwwroot
+
+    - name: Verify deployment
+      run: |
+        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+        echo "Checking $URL"
+        curl -f $URL || exit 1
+
+    - name: Check Blazor assets
+      run: |
+        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/_framework/blazor.webassembly.js"
+        curl -f $URL || exit 1
+
+    - name: Validate page content
+      run: |
+        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+        curl -s $URL | grep "<title>" || exit 1
+
+    - name: Notify on failure
+      if: failure()
+      run: echo "Deployment failed!"
