@@ -121,10 +121,7 @@ jobs:
       run: echo "Deployment failed!"
 
     - name: Run tests with coverage
-      run: |
-          dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj 
-          -c Release 
-          --collect:"XPlat Code Coverage"
+      run: dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj -c Release --collect:"XPlat Code Coverage"
 
     - name: Find coverage files
       run: find . -name "coverage.cobertura.xml"
