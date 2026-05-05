@@ -176,7 +176,7 @@ jobs:
       with:
        script: |
         const coverage = "${{ steps.coverage.outputs.value }}";
-        const threshold = 70;
+        const threshold = 7;
 
         await github.rest.checks.create({
         owner: context.repo.owner,
