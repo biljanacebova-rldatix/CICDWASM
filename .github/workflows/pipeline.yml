@@ -159,6 +159,34 @@ jobs:
         name: coverage-report
         path: coverage-report
 
+    - name: Extract coverage
+      id: coverage
+      run: |
+       FILE=$(find . -name coverage.cobertura.xml | head -n 1)
+       RATE=$(grep -oP 'line-rate="\K[0-9.]+' "$FILE")
+       PERCENT=$(awk "BEGIN {print int($RATE * 100)}")
+       echo "value=$PERCENT" >> $GITHUB_OUTPUT
+
+    - name: Coverage Check
+      uses: actions/github-script@v7
+      with:
+       script: |
+        const coverage = "${{ steps.coverage.outputs.value }}";
+        const threshold = 70;
+
+        await github.rest.checks.create({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        name: "Coverage",
+        head_sha: context.sha,
+        status: "completed",
+        conclusion: coverage >= threshold ? "success" : "failure",
+        output: {
+          title: "Code Coverage",
+          summary: `Coverage: ${coverage}% (threshold: ${threshold}%)`
+        }
+        });
+
     - name: Coverage summary
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
