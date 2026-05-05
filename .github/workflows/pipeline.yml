@@ -35,6 +35,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Build tests
         run: dotnet build CICDWASM.Tests/CICDWASM.Tests.csproj -c Release
 
