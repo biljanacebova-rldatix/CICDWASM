@@ -163,8 +163,12 @@ jobs:
       id: coverage
       run: |
        FILE=$(find . -name coverage.cobertura.xml | head -n 1)
-       RATE=$(grep -oP 'line-rate="\K[0-9.]+' "$FILE")
-       PERCENT=$(awk "BEGIN {print int($RATE * 100)}")
+       echo "Using file: $FILE"
+       RATE=$(grep -oP 'line-rate="\K[0-9.]+' "$FILE" | head -n 1)
+       echo "Raw rate: $RATE"
+       # Safe conversion (no awk issues)
+       PERCENT=$(python3 -c "print(int(float('$RATE') * 100))")
+       echo "Coverage: $PERCENT%"
        echo "value=$PERCENT" >> $GITHUB_OUTPUT
 
     - name: Coverage Check
