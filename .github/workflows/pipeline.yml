@@ -146,10 +146,10 @@ jobs:
        path: coverage-report
 
     - name: Coverage summary
-      uses: irongut/CodeCoverageSummary@v1
+      uses: irongut/CodeCoverageSummary@v1.3.0
       with:
        filename: "**/coverage.cobertura.xml"
        badge: true
        format: markdown
        output: both
-
+      
