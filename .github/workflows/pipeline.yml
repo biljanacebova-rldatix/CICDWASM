@@ -205,6 +205,7 @@ jobs:
        echo "See details above or download artifact." >> $GITHUB_STEP_SUMMARY
 
   sonar-cloud:
+   needs: tests
    runs-on: ubuntu-latest
 
    steps:
