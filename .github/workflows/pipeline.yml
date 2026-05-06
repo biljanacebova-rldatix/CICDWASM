@@ -239,8 +239,9 @@ jobs:
         /k:"${{ vars.SONAR_PROJECT_KEY }}" \
         /o:"${{ vars.SONAR_ORGANIZATION }}" \
         /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
-        /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+        /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
         /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml"
+
 
     # 🔹 Build
     - name: Build
