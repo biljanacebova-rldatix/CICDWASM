@@ -203,4 +203,58 @@ jobs:
       run: |
        echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
        echo "See details above or download artifact." >> $GITHUB_STEP_SUMMARY
+
+  sonar-cloud:
+    needs: tests
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      with:
+        args: >
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+          -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+
+    - name: Install SonarScanner
+      run: dotnet tool install --global dotnet-sonarscanner
+
+    - name: Add dotnet tools to PATH
+      run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+    # 🔹 Begin analysis
+    - name: Sonar Begin
+      run: |
+        dotnet-sonarscanner begin \
+        /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+        /o:"${{ vars.SONAR_ORGANIZATION }}" \
+        /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
+        /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+        /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml"
+
+    # 🔹 Build
+    - name: Build
+      run: dotnet build -c Release
+
+    # 🔹 Test + coverage
+    - name: Test with coverage
+      run: |
+       dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj \
+        -c Release \
+        --no-build \
+        --collect:"XPlat Code Coverage"
+
+    # 🔹 End analysis
+    - name: Sonar End
+      run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
       
