@@ -242,7 +242,6 @@ jobs:
         /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
         /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml"
 
-
     # 🔹 Build
     - name: Build
       run: dotnet build -c Release
