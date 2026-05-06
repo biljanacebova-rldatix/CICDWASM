@@ -205,41 +205,56 @@ jobs:
        echo "See details above or download artifact." >> $GITHUB_STEP_SUMMARY
 
   sonar-cloud:
-    needs: tests
-    runs-on: ubuntu-latest
+   runs-on: ubuntu-latest
 
-    steps:
+   steps:
+    # ======================
+    # 1. Checkout FULL history (important for Sonar)
+    # ======================
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0   # IMPORTANT for Sonar
+        fetch-depth: 0
 
+    # ======================
+    # 2. Setup .NET
+    # ======================
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: 8.0.x
 
+    # ======================
+    # 3. Install Sonar Scanner
+    # ======================
     - name: Install SonarScanner
       run: dotnet tool install --global dotnet-sonarscanner
 
     - name: Add tools to PATH
       run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-    # 🔹 START
+    # ======================
+    # 4. START ANALYSIS
+    # ======================
     - name: Sonar Begin
       run: |
         dotnet-sonarscanner begin \
           /k:"${{ vars.SONAR_PROJECT_KEY }}" \
           /o:"${{ vars.SONAR_ORGANIZATION }}" \
-          /d:sonar.host.url="https://sonarcloud.io" \
+          /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-          /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml"
+          /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
+          /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**"
 
-    # 🔹 BUILD (MANDATORY - this is what you were missing conceptually)
+    # ======================
+    # 5. BUILD SOLUTION (CRITICAL)
+    # ======================
     - name: Build solution
-      run: dotnet build -c Release
+      run: dotnet build CICDWASM.sln -c Release
 
-    # 🔹 TEST (optional coverage)
+    # ======================
+    # 6. RUN TESTS + COVERAGE
+    # ======================
     - name: Test with coverage
       run: |
         dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj \
@@ -247,6 +262,8 @@ jobs:
           --no-build \
           --collect:"XPlat Code Coverage"
 
-    # 🔹 END
+    # ======================
+    # 7. END ANALYSIS
+    # ======================
     - name: Sonar End
       run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
