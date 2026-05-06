@@ -209,52 +209,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0   # IMPORTANT for Sonar
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
-      with:
-        args: >
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-          -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-          -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
-
     - name: Install SonarScanner
       run: dotnet tool install --global dotnet-sonarscanner
 
-    - name: Add dotnet tools to PATH
+    - name: Add tools to PATH
       run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-    # 🔹 Begin analysis
+    # 🔹 START
     - name: Sonar Begin
       run: |
         dotnet-sonarscanner begin \
-        /k:"${{ vars.SONAR_PROJECT_KEY }}" \
-        /o:"${{ vars.SONAR_ORGANIZATION }}" \
-        /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
-        /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-        /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml"
+          /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+          /o:"${{ vars.SONAR_ORGANIZATION }}" \
+          /d:sonar.host.url="https://sonarcloud.io" \
+          /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+          /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml"
 
-    # 🔹 Build
-    - name: Build
+    # 🔹 BUILD (MANDATORY - this is what you were missing conceptually)
+    - name: Build solution
       run: dotnet build -c Release
 
-    # 🔹 Test + coverage
+    # 🔹 TEST (optional coverage)
     - name: Test with coverage
       run: |
-       dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj \
-        -c Release \
-        --no-build \
-        --collect:"XPlat Code Coverage"
+        dotnet test CICDWASM.Tests/CICDWASM.Tests.csproj \
+          -c Release \
+          --no-build \
+          --collect:"XPlat Code Coverage"
 
-    # 🔹 End analysis
+    # 🔹 END
     - name: Sonar End
       run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-      
