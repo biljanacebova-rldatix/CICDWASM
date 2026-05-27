@@ -29,6 +29,14 @@ jobs:
 
       - name: Build solution
         run: dotnet build --no-restore -c Release
+         
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+         name: build-output
+         path: |
+           **/bin/Release
+           **/obj/Release
   
   tests:
     needs: build
@@ -88,6 +96,12 @@ jobs:
     - name: Fix base href
       run: |
         sed -i 's|<base href="/"[^>]*>|<base href="/${{ github.event.repository.name }}/">|g' release/wwwroot/index.html
+
+    - name: Upload published app artifact
+      uses: actions/upload-artifact@v4
+      with:
+       name: published-blazor-app
+       path: release/wwwroot
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
