@@ -327,7 +327,7 @@ jobs:
     # 7. END ANALYSIS
     # ======================
     - name: Sonar End
-      run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
     - name: Verify report file
       run: |
@@ -350,4 +350,4 @@ jobs:
         echo "Searching for sonar directories"
         find . -type d | grep sonar || true
 
-    # Test 4
+    # Test PR 4
