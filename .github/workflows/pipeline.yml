@@ -380,7 +380,7 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Publish app
-      run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o release
+      run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o publish
 
     - name: Fix base href
       run: |
