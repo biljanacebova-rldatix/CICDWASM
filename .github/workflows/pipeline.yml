@@ -167,7 +167,7 @@ jobs:
        echo "See details above or download artifact." >> $GITHUB_STEP_SUMMARY
 
     - name: Comment Coverage
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && github.event.action != 'closed'
       uses: marocchino/sticky-pull-request-comment@v2
       with:
         header: coverage
@@ -236,7 +236,7 @@ jobs:
         /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**"
 
     - name: Sonar Begin (PR)
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && github.event.action != 'closed'
       run: |
         dotnet-sonarscanner begin \
         /k:"${{ vars.SONAR_PROJECT_KEY }}" \
@@ -298,7 +298,7 @@ jobs:
 # =========================
   pr-preview:
     needs: [build, tests, code-coverage, sonar-cloud]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
 
     steps:
