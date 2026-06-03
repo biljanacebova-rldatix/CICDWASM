@@ -338,44 +338,46 @@ jobs:
 # CLEANUP PREVIEW (PR CLOSED)
 # =========================
   cleanup-preview:
-  if: github.event_name == 'pull_request' && github.event.action == 'closed'
-  runs-on: ubuntu-latest
+    name: Cleanup PR Preview
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
 
-  steps:
-    - name: Checkout gh-pages safely
-      run: |
-        git init
-        git remote add origin https://github.com/${{ github.repository }}.git
-        git fetch origin gh-pages || exit 0
-        git checkout -B gh-pages origin/gh-pages || git checkout --orphan gh-pages
+    
+    steps:
+      - name: Checkout gh-pages safely
+        run: |
+          git init
+          git remote add origin https://github.com/${{ github.repository }}.git
+          git fetch origin gh-pages || exit 0
+          git checkout -B gh-pages origin/gh-pages || git checkout --orphan gh-pages
 
-    - name: Determine PR folder
-      id: pr
-      run: |
-        PR_NUMBER="${{ github.event.pull_request.number }}"
-        echo "pr=$PR_NUMBER" >> $GITHUB_OUTPUT
+      - name: Determine PR folder
+        id: pr
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          echo "pr=$PR_NUMBER" >> $GITHUB_OUTPUT
 
-    - name: Remove preview folder safely
-      run: |
-        FOLDER="pr-${{ steps.pr.outputs.pr }}"
+      - name: Remove preview folder safely
+        run: |
+          FOLDER="pr-${{ steps.pr.outputs.pr }}"
 
-        if [ -d "$FOLDER" ]; then
-          rm -rf "$FOLDER"
-        else
-          echo "Folder $FOLDER does not exist - skipping"
-          exit 0
-        fi
+          if [ -d "$FOLDER" ]; then
+            rm -rf "$FOLDER"
+          else
+            echo "Folder $FOLDER does not exist - skipping"
+            exit 0
+          fi
 
-    - name: Commit cleanup safely
-      run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
+      - name: Commit cleanup safely
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-        git add .
+          git add .
 
-        git commit -m "cleanup PR #${{ steps.pr.outputs.pr }}" || echo "Nothing to commit"
+          git commit -m "cleanup PR #${{ steps.pr.outputs.pr }}" || echo "Nothing to commit"
 
-        git push origin gh-pages || echo "Nothing to push"
+          git push origin gh-pages || echo "Nothing to push"
 
 
 # =========================
