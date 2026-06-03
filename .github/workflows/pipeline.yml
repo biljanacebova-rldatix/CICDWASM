@@ -336,8 +336,7 @@ jobs:
 # =========================
 # CLEANUP PREVIEW (PR CLOSED)
 # =========================
-  cleanup-preview:
-    name: Cleanup PR Preview
+  cleanup-pr-preview:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
 
@@ -453,3 +452,4 @@ jobs:
     - name: Notify on failure
       if: failure()
       run: echo "Deployment failed!"
+# Test 8
