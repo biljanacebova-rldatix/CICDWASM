@@ -364,7 +364,7 @@ jobs:
 # =========================        
   deploy:
     needs: [build, tests, code-coverage, sonar-cloud]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull-request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     environment:
