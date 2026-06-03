@@ -280,6 +280,9 @@ jobs:
         ls -la .sonarqube/out/.sonar/
         cat .sonarqube/out/.sonar/report-task.txt
 
+    # ======================
+    # 8. QUALITY GATE
+    # ======================
     - name: Sonar Quality Gate
       uses: SonarSource/sonarqube-quality-gate-action@master
       with:
