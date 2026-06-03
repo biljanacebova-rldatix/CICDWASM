@@ -327,7 +327,7 @@ jobs:
     # 7. END ANALYSIS
     # ======================
     - name: Sonar End
-      run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
     - name: Verify report file
       run: |
