@@ -12,13 +12,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   checks: write
   pages: write
   id-token: write
   pull-requests: write
 
 jobs:
+
+# =========================
+# BUILD
+# =========================
   build:
     runs-on: ubuntu-latest
 
@@ -45,6 +49,9 @@ jobs:
            **/bin/Release
            **/obj/Release
   
+# =========================
+# TESTS
+# =========================
   tests:
     needs: build
     runs-on: ubuntu-latest
@@ -81,76 +88,9 @@ jobs:
           path: ./CICDWASM/TestResults/**/*.trx
           reporter: dotnet-trx
   
-  deploy:
-    needs: [tests, code-coverage, sonar-cloud]
-    runs-on: ubuntu-latest
-
-    if: github.event_name != 'pull_request'
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-
-    - name: Publish app
-      run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o release
-
-    - name: Fix base href
-      run: |
-        sed -i 's|<base href="/"[^>]*>|<base href="/${{ github.event.repository.name }}/">|g' release/wwwroot/index.html
-
-    - name: Upload published app artifact
-      uses: actions/upload-artifact@v4
-      with:
-       name: published-blazor-app
-       path: release/wwwroot
-
-    - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: release/wwwroot
-
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-
-    - name: Add summary - monitoring
-      if: always()
-      run: |
-        echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- Tests executed" >> $GITHUB_STEP_SUMMARY
-        echo "- Deployment attempted" >> $GITHUB_STEP_SUMMARY
-
-    - name: Show publish output - explicit logging
-      run: ls -R release/wwwroot
-
-    - name: Verify deployment
-      run: |
-        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-        echo "Checking $URL"
-        curl -f $URL || exit 1
-
-    - name: Check Blazor assets
-      run: |
-        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/_framework/blazor.webassembly.js"
-        curl -f $URL || exit 1
-
-    - name: Validate page content
-      run: |
-        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-        curl -s $URL | grep "<title>" || exit 1
-
-    - name: Notify on failure
-      if: failure()
-      run: echo "Deployment failed!"
-
+# =========================
+# CODE COVERAGE
+# =========================
   code-coverage:
     needs: tests
     runs-on: ubuntu-latest
@@ -249,6 +189,9 @@ jobs:
         exit 1
        fi
 
+# =========================
+# SONAR CLOUD
+# =========================
   sonar-cloud:
    needs: tests
    runs-on: ubuntu-latest
@@ -349,3 +292,141 @@ jobs:
 
         echo "Searching for sonar directories"
         find . -type d | grep sonar || true
+
+
+# =========================
+# PR PREVIEW DEPLOYMENT
+# =========================
+  pr-preview:
+    needs: [build, tests, code-coverage, sonar-cloud]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish app
+        run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o publish
+
+      - name: Fix base href
+        run: |
+          sed -i "s|<base href=\"/\"|<base href=\"/CICDWASM/pr-${{ github.event.pull_request.number }}/\"|g" publish/wwwroot/index.html
+
+      - name: Deploy PR preview
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: publish/wwwroot
+          destination_dir: pr-${{ github.event.pull_request.number }}
+
+      - name: Comment PR preview URL
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: preview
+          message: |
+            🚀 **PR Preview deployed**
+
+            👉 https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.pull_request.number }}/
+
+
+# =========================
+# CLEANUP PREVIEW (PR CLOSED)
+# =========================
+  cleanup-preview:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Delete preview folder
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          rm -rf pr-${{ github.event.pull_request.number }}
+
+          git add .
+          git commit -m "cleanup PR #${{ github.event.pull_request.number }}" || exit 0
+          git push
+
+
+# =========================
+# PRODUCTION DEPLOY (ONLY MAIN)
+# =========================        
+  deploy:
+    needs: [build, tests, code-coverage, sonar-cloud]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Publish app
+      run: dotnet publish CICDWASM/CICDWASM.csproj -c Release -o release
+
+    - name: Fix base href
+      run: |
+        sed -i 's|<base href="/"[^>]*>|<base href="/${{ github.event.repository.name }}/">|g' release/wwwroot/index.html
+
+    - name: Upload published app artifact
+      uses: actions/upload-artifact@v4
+      with:
+       name: published-blazor-app
+       path: release/wwwroot
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: release/wwwroot
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+    - name: Add summary - monitoring
+      if: always()
+      run: |
+        echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Tests executed" >> $GITHUB_STEP_SUMMARY
+        echo "- Deployment attempted" >> $GITHUB_STEP_SUMMARY
+
+    - name: Show publish output - explicit logging
+      run: ls -R release/wwwroot
+
+    - name: Verify deployment
+      run: |
+        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+        echo "Checking $URL"
+        curl -f $URL || exit 1
+
+    - name: Check Blazor assets
+      run: |
+        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/_framework/blazor.webassembly.js"
+        curl -f $URL || exit 1
+
+    - name: Validate page content
+      run: |
+        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+        curl -s $URL | grep "<title>" || exit 1
+
+    - name: Notify on failure
+      if: failure()
+      run: echo "Deployment failed!"
