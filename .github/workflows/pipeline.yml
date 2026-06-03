@@ -82,8 +82,10 @@ jobs:
           reporter: dotnet-trx
   
   deploy:
-    needs: tests
+    needs: [tests, code-coverage, sonar-cloud]
     runs-on: ubuntu-latest
+
+    if: github.event_name != 'pull_request'
 
     environment:
       name: github-pages
