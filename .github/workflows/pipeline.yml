@@ -231,7 +231,6 @@ jobs:
         /k:"${{ vars.SONAR_PROJECT_KEY }}" \
         /o:"${{ vars.SONAR_ORGANIZATION }}" \
         /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
-        /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
         /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
         /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
         /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**"
@@ -243,7 +242,6 @@ jobs:
         /k:"${{ vars.SONAR_PROJECT_KEY }}" \
         /o:"${{ vars.SONAR_ORGANIZATION }}" \
         /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
-        /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
         /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
         /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
         /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**" \
