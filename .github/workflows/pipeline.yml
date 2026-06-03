@@ -16,6 +16,7 @@ permissions:
   checks: write
   pages: write
   id-token: write
+  pull-requests: write
 
 jobs:
   build:
