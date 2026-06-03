@@ -3,7 +3,13 @@
 on:
   push:
     branches: [ main, develop ]
-  workflow_dispatch:   # manual run button
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -218,6 +224,28 @@ jobs:
        echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
        echo "See details above or download artifact." >> $GITHUB_STEP_SUMMARY
 
+    - name: Comment Coverage
+      if: github.event_name == 'pull_request'
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        header: coverage
+        message: |
+          ## Coverage Report
+          Coverage: **${{ steps.coverage.outputs.value }}%**
+
+    - name: Coverage Gate
+      run: |
+       COVERAGE=${{ steps.coverage.outputs.value }}
+       THRESHOLD=8
+
+       echo "Coverage: $COVERAGE%"
+       echo "Threshold: $THRESHOLD%"
+
+       if [ "$COVERAGE" -lt "$THRESHOLD" ]; then
+        echo "Coverage below threshold"
+        exit 1
+       fi
+
   sonar-cloud:
    needs: tests
    runs-on: ubuntu-latest
@@ -251,15 +279,30 @@ jobs:
     # ======================
     # 4. START ANALYSIS
     # ======================
-    - name: Sonar Begin
+    - name: Sonar Begin (Push)
+      if: github.event_name != 'pull_request'
       run: |
         dotnet-sonarscanner begin \
-          /k:"${{ vars.SONAR_PROJECT_KEY }}" \
-          /o:"${{ vars.SONAR_ORGANIZATION }}" \
-          /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
-          /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
-          /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
-          /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**"
+        /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+        /o:"${{ vars.SONAR_ORGANIZATION }}" \
+        /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
+        /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+        /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
+        /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**"
+
+    - name: Sonar Begin (PR)
+      if: github.event_name == 'pull_request'
+      run: |
+        dotnet-sonarscanner begin \
+        /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+        /o:"${{ vars.SONAR_ORGANIZATION }}" \
+        /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
+        /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+        /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
+        /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**" \
+        /d:sonar.pullrequest.key="${{ github.event.pull_request.number }}" \
+        /d:sonar.pullrequest.branch="${{ github.head_ref }}" \
+        /d:sonar.pullrequest.base="${{ github.base_ref }}"
 
     # ======================
     # 5. BUILD SOLUTION (CRITICAL)
@@ -282,3 +325,9 @@ jobs:
     # ======================
     - name: Sonar End
       run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
+    - name: Sonar Quality Gate
+      uses: SonarSource/sonarqube-quality-gate-action@master
+      timeout-minutes: 10
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
