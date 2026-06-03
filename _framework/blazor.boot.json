@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "CICDWASM",
   "resources": {
-    "hash": "sha256-MFBGfonNJ8MFyASXjE9zSSwBf/J2cRep35momjsyloY=",
+    "hash": "sha256-+n+w92n0c3yKmSnzx3Bn1mAJjms+/ntjxBXaJ4Vh3Ik=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-sn/g61GjVPhViOYQDkq1OMlk0eyS9r2Hi0qgU2o0HIU="
     },
@@ -49,7 +49,7 @@
       "System.Text.Json.wasm": "sha256-/JoO9J79B7Phxwz1DZh9G9xEfEDJhB3SehnT2nyve3Y=",
       "System.Text.RegularExpressions.wasm": "sha256-6lTM5rK99dTveKD7N9enrJEr67CxhLZgBg3Jkk0mIgo=",
       "System.Private.CoreLib.wasm": "sha256-1uwNaXs84fhTKsdzOrlpzBQo5ULojGt9ro9EfBkEp0s=",
-      "CICDWASM.wasm": "sha256-4nitiq24Rhb7vxH2r8HzbizWio34+WZXtJl7XXZR8kE="
+      "CICDWASM.wasm": "sha256-cKtdgw9f57BqxMXt9w4p+PudaIw/+p0wtMACDWjLAHI="
     }
   },
   "cacheBootResources": true,
