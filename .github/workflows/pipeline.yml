@@ -23,7 +23,6 @@ jobs:
 # BUILD
 # =========================
   build:
-    if: github.event_name != 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
 
     steps:
@@ -53,7 +52,6 @@ jobs:
 # TESTS
 # =========================
   tests:
-    if: github.event_name != 'pull_request' && github.event.action != 'closed'
     needs: build
     runs-on: ubuntu-latest
     
@@ -93,7 +91,6 @@ jobs:
 # CODE COVERAGE
 # =========================
   code-coverage:
-    if: github.event_name != 'pull_request' && github.event.action != 'closed'
     needs: tests
     runs-on: ubuntu-latest
 
@@ -195,7 +192,6 @@ jobs:
 # SONAR CLOUD
 # =========================
   sonar-cloud:
-   if: github.event_name != 'pull_request' && github.event.action != 'closed'
    needs: tests
    runs-on: ubuntu-latest
 
@@ -385,8 +381,10 @@ jobs:
 # PRODUCTION DEPLOY (ONLY MAIN)
 # =========================        
   deploy:
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch'
     needs: [build, tests, code-coverage, sonar-cloud]
-    if: github.event_name != 'pull-request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     environment:
