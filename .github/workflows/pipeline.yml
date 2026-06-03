@@ -347,3 +347,5 @@ jobs:
 
         echo "Searching for sonar directories"
         find . -type d | grep sonar || true
+
+    # Test PR 3
