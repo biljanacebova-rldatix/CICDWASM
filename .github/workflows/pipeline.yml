@@ -5,9 +5,8 @@ on:
     branches: [ main, develop ]
 
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
+    types: [opened, reopened, synchronize, closed]
 
   workflow_dispatch:
 
@@ -233,6 +232,7 @@ jobs:
         /o:"${{ vars.SONAR_ORGANIZATION }}" \
         /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
         /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+        /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
         /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
         /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**"
 
@@ -244,6 +244,7 @@ jobs:
         /o:"${{ vars.SONAR_ORGANIZATION }}" \
         /d:sonar.host.url="${{ vars.SONAR_HOST_URL }}" \
         /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+        /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
         /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
         /d:sonar.exclusions="**/bin/**,**/obj/**,**/.vs/**,**/.github/**" \
         /d:sonar.pullrequest.key="${{ github.event.pull_request.number }}" \
@@ -342,7 +343,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
 
-    
     steps:
       - name: Checkout gh-pages safely
         run: |
