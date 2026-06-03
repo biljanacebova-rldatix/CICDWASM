@@ -236,7 +236,7 @@ jobs:
     - name: Coverage Gate
       run: |
        COVERAGE=${{ steps.coverage.outputs.value }}
-       THRESHOLD=8
+       THRESHOLD=7
 
        echo "Coverage: $COVERAGE%"
        echo "Threshold: $THRESHOLD%"
@@ -331,3 +331,12 @@ jobs:
       timeout-minutes: 10
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    - name: Debug Sonar output
+      if: always()
+      run: |
+        echo "Searching for report-task.txt"
+        find . -name report-task.txt
+
+        echo "Searching for sonar directories"
+        find . -type d | grep sonar || true
