@@ -384,18 +384,18 @@ jobs:
 
     - name: Fix base href
       run: |
-        sed -i 's|<base href="/"[^>]*>|<base href="/${{ github.event.repository.name }}/">|g' release/wwwroot/index.html
+        sed -i 's|<base href="/"[^>]*>|<base href="/${{ github.event.repository.name }}/">|g' publish/wwwroot/index.html
 
     - name: Upload published app artifact
       uses: actions/upload-artifact@v4
       with:
        name: published-blazor-app
-       path: release/wwwroot
+       path: publish/wwwroot
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: release/wwwroot
+        path: publish/wwwroot
 
     - name: Deploy to GitHub Pages
       id: deployment
@@ -413,7 +413,7 @@ jobs:
         echo "- Deployment attempted" >> $GITHUB_STEP_SUMMARY
 
     - name: Show publish output - explicit logging
-      run: ls -R release/wwwroot
+      run: ls -R publish/wwwroot
 
     - name: Verify deployment
       run: |
