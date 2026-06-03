@@ -336,7 +336,6 @@ jobs:
 
             👉 https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.pull_request.number }}/
 
-
 # =========================
 # CLEANUP PREVIEW (PR CLOSED)
 # =========================
