@@ -342,7 +342,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
 
-    
     steps:
       - name: Checkout gh-pages safely
         run: |
